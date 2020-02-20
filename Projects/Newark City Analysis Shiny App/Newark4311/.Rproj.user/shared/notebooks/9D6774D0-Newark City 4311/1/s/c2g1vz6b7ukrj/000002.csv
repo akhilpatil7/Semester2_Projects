@@ -1,0 +1,83 @@
+"0","# Required libs"
+"0","library(httr)"
+"2","package ‘httr’ was built under R version 3.5.3"
+"0","library(jsonlite)"
+"2","package ‘jsonlite’ was built under R version 3.5.3"
+"2","
+Attaching package: ‘jsonlite’
+
+"
+"2","The following object is masked from ‘package:shiny’:
+
+    validate
+
+"
+"0","library(lubridate)"
+"2","
+Attaching package: ‘lubridate’
+
+"
+"2","The following object is masked from ‘package:base’:
+
+    date
+
+"
+"0","library(tidyverse)"
+"2","[30m-- [1mAttaching packages[22m --------------------------------------- tidyverse 1.2.1 --[39m
+"
+"2","[30m[32mv[30m [34mggplot2[30m 3.1.1       [32mv[30m [34mpurrr  [30m 0.3.2  
+[32mv[30m [34mtibble [30m 2.1.1       [32mv[30m [34mdplyr  [30m 0.8.0.[31m1[30m
+[32mv[30m [34mtidyr  [30m 0.8.2       [32mv[30m [34mstringr[30m 1.4.0  
+[32mv[30m [34mreadr  [30m 1.2.1       [32mv[30m [34mforcats[30m 0.3.0  [39m
+"
+"2","package ‘ggplot2’ was built under R version 3.5.3"
+"2","package ‘tibble’ was built under R version 3.5.3"
+"2","package ‘purrr’ was built under R version 3.5.3"
+"2","package ‘dplyr’ was built under R version 3.5.3"
+"2","package ‘stringr’ was built under R version 3.5.3"
+"2","[30m-- [1mConflicts[22m ------------------------------------------ tidyverse_conflicts() --
+[31mx[30m [34mlubridate[30m::[32mas.difftime()[30m masks [34mbase[30m::as.difftime()
+[31mx[30m [34mlubridate[30m::[32mdate()[30m        masks [34mbase[30m::date()
+[31mx[30m [34mdplyr[30m::[32mfilter()[30m          masks [34mstats[30m::filter()
+[31mx[30m [34mpurrr[30m::[32mflatten()[30m         masks [34mjsonlite[30m::flatten()
+[31mx[30m [34mlubridate[30m::[32mintersect()[30m   masks [34mbase[30m::intersect()
+[31mx[30m [34mdplyr[30m::[32mlag()[30m             masks [34mstats[30m::lag()
+[31mx[30m [34mlubridate[30m::[32msetdiff()[30m     masks [34mbase[30m::setdiff()
+[31mx[30m [34mlubridate[30m::[32munion()[30m       masks [34mbase[30m::union()
+[31mx[30m [34mjsonlite[30m::[32mvalidate()[30m     masks [34mshiny[30m::validate()[39m
+"
+"0","library(stringr)"
+"0","library(leaflet)"
+"2","package ‘leaflet’ was built under R version 3.5.3"
+"0","#install.packages(""DT"")"
+"0","library(rpart)"
+"0","library(DT)"
+"2","package ‘DT’ was built under R version 3.5.3"
+"2","
+Attaching package: ‘DT’
+
+"
+"2","The following objects are masked from ‘package:shiny’:
+
+    dataTableOutput, renderDataTable
+
+"
+"0","library(forecast)"
+"0","library(rpart.plot)"
+"0","library(caret)"
+"2","Loading required package: lattice
+"
+"2","
+Attaching package: ‘caret’
+
+"
+"2","The following object is masked from ‘package:purrr’:
+
+    lift
+
+"
+"2","The following object is masked from ‘package:httr’:
+
+    progress
+
+"

@@ -1,0 +1,4 @@
+"0","temp = c(xhist$`Type Name`,x2015$`Type Name`,x2018$Typename)"
+"0","m1 <- matrix(temp, ncol=1, byrow=TRUE)"
+"0","overall.complaints <- as.data.frame(m1, stringsAsFactors=FALSE)"
+"0","overall.complaints"

@@ -1,0 +1,4 @@
+"0","na.omit(till.2015) %>%"
+"0","  group_by(Location) %>%"
+"0","  summarise(Count = length(Location)) %>%"
+"0","  arrange(desc(Count), .by_group = TRUE)"

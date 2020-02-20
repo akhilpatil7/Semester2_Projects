@@ -1,0 +1,3 @@
+"0","x2015$`Street Address` = paste(x2015$`Street Number`,x2015$`Street Name`)"
+"0","x2015$`Street Name` = NULL"
+"0","x2015$`Street Number` = NULL"

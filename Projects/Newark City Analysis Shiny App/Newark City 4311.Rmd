@@ -1,0 +1,617 @@
+---
+title: "Newark City 4311"
+author: "Akhil Patil"
+output: html_notebook
+---
+
+Newark City 4311 data anaysis
+
+```{r}
+# Required libs
+library(httr)
+library(jsonlite)
+library(lubridate)
+
+library(tidyverse)
+library(stringr)
+library(leaflet)
+#install.packages("DT")
+library(rpart)
+library(DT)
+library(forecast)
+library(rpart.plot)
+library(caret)
+
+```
+
+
+
+Parsing Newark Historic data
+```{r}
+
+urls.hist = c("http://data.ci.newark.nj.us/mk/api/3/action/datastore_search?resource_id=1cebcf44-3b2c-4f60-9d5d-817cb35bf9df&limit=40000",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%221cebcf44-3b2c-4f60-9d5d-817cb35bf9df%22%20WHERE%20_id%20%3E%2031889",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%221cebcf44-3b2c-4f60-9d5d-817cb35bf9df%22%20WHERE%20_id%20%3E%2063889",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%221cebcf44-3b2c-4f60-9d5d-817cb35bf9df%22%20WHERE%20_id%20%3E%2095888")
+xhist = data.frame()
+
+for(i in urls.hist ){
+  raw.result <- GET(url = i)
+  this.raw.content <- rawToChar(raw.result$content)
+  this.content <- fromJSON(this.raw.content)
+  json_file <- lapply(this.content, function(x) {
+    x[sapply(x, is.null)] <- NA
+    unlist(x)
+  })
+  
+  xhistoric = this.content$result$records
+  xhistoric = xhistoric[,c("Type Name","Type Id","Street Address" , "Longitude","Request Id","Request Date", "Latitude" , "_id" ,"ID")]
+  xhist = rbind(xhist,xhistoric)
+}
+
+dim(xhist)
+```
+
+
+Parsing 2015 Data
+```{r}
+
+url = "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search?resource_id=bc8e29eb-3c53-418c-a42a-4dbbaae668c2&limit=60000"
+
+raw.result <- GET(url = url)
+this.raw.content <- rawToChar(raw.result$content)
+this.content <- fromJSON(this.raw.content)
+
+json_file <- lapply(this.content, function(x) {
+  x[sapply(x, is.null)] <- NA
+  unlist(x)
+})
+
+x2015 = this.content$result$records
+dim(x2015)
+
+```
+
+
+Parsing 2018 Data
+```{r}
+
+urls.2018 = c("http://data.ci.newark.nj.us/mk/api/3/action/datastore_search?resource_id=b923c1ad-7246-400b-a593-785f67677b94&limit=68408",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%22b923c1ad-7246-400b-a593-785f67677b94%22%20WHERE%20_id%20%3E%2031993",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%22b923c1ad-7246-400b-a593-785f67677b94%22%20WHERE%20_id%20%3E%2066495")
+x2018 = data.frame()
+
+for(i in urls.2018 ){
+  raw.result <- GET(url = i)
+  this.raw.content <- rawToChar(raw.result$content)
+  this.content <- fromJSON(this.raw.content)
+  json_file <- lapply(this.content, function(x) {
+    x[sapply(x, is.null)] <- NA
+    unlist(x)
+  })
+  
+  xtemp = this.content$result$records
+  xtemp = xtemp[,c("Complaint","DateCreated","Typename","Location","Lot", "ComplaintID","Department" ,"_id" ,"Block")]
+  x2018 = rbind(x2018,xtemp)
+}
+
+dim(x2018)
+```
+
+```{r}
+names(xhist)
+names(x2015)
+names(x2018)
+```
+
+
+Fixing the 2015 dataset
+
+```{r}
+x2015$`Street Address` = paste(x2015$`Street Number`,x2015$`Street Name`)
+
+x2015$`Street Name` = NULL
+x2015$`Street Number` = NULL
+```
+
+```{r}
+sum(is.na(x2018))
+sum(complete.cases(x2018))
+```
+
+Assign Blank cells with NA's for x2015 
+```{r}
+x2015$`Street Address`[x2015$`Street Address` == " "] = NA
+sum(is.na(x2015))
+```
+
+Assign Blank cells with NA'sfor x2018
+
+```{r}
+xhist[xhist == " "] = NA
+sum(is.na(xhist))
+```
+
+Parse Date
+```{r}
+
+xhist$`Request Date` = as.POSIXct(xhist$`Request Date`)
+
+x2015$`Request Date` = "2015"
+x2015$`Request Date` = as.Date(x2015$`Request Date`,format = "%Y")
+
+
+x2018$DateCreated = as.POSIXct(x2018$DateCreated, format = "%b %d %Y")
+
+```
+
+Creating new combined dataset for x2015 and xhist
+```{r}
+till.2015 = rbind(xhist,x2015)
+```
+
+
+```{r}
+names(till.2015)[1:3]<-c("Complaint","ComplaintID","Location")
+names(till.2015)[6]<-c("DateCreated")
+
+```
+
+overall4311  Dataset with common attributes
+
+```{r}
+overall4311 = rbind(till.2015[,c(1,3,6)], x2018[,c(1,4,2)])
+```
+
+
+```{r}
+fillColor = "#FFA07A"
+fillColor2 = "#F1C40F"
+
+```
+
+```{r}
+x2018 %>%
+  group_by(Typename) %>%
+  summarise(Count = n()) %>%
+  ungroup() %>%
+  mutate(complaint_description = reorder(Typename,Count)) %>%
+  arrange(desc(Count)) %>%
+  head(10) %>%
+  
+  ggplot(aes(x = reorder(Typename,Count),y = Count )) +
+  geom_bar(stat='identity',colour="white", fill = fillColor2) +
+  geom_text(aes(x = complaint_description, y = 1, label = paste0("(",Count,")",sep="")),
+            hjust=0, vjust=.5, size = 4, colour = 'black',
+            fontface = 'bold') +
+  labs(x = 'Complaint Descriptors', 
+       y = 'Count', 
+       title = 'Highest Complaint Typename 2018') +
+  coord_flip() + 
+  theme_bw()
+
+```
+
+Combing the datasets for getting overall Complaint typename
+```{r}
+temp = c(xhist$`Type Name`,x2015$`Type Name`,x2018$Typename)
+
+m1 <- matrix(temp, ncol=1, byrow=TRUE)
+overall.complaints <- as.data.frame(m1, stringsAsFactors=FALSE)
+overall.complaints
+dim(overall.complaints)
+```
+```{r}
+overall.complaints %>%
+  group_by(V1) %>%
+  summarise(Count = n()) %>%
+  ungroup() %>%
+  mutate(complaint_description = reorder(V1,Count)) %>%
+  arrange(desc(Count)) %>%
+  head(20) %>%
+  
+  ggplot(aes(x = reorder(V1,Count),y = Count )) +
+  geom_bar(stat='identity',colour="white", fill = fillColor2) +
+  geom_text(aes(x = complaint_description, y = 1, label = paste0("(",Count,")",sep="")),
+            hjust=0, vjust=.5, size = 4, colour = 'black',
+            fontface = 'bold') +
+  labs(x = 'Complaint Descriptors', 
+       y = 'Count', 
+       title = 'Highest Complaint Typename') +
+  coord_flip() + 
+  theme_bw()
+
+```
+
+Cluster Analysis of Complaints through Location
+
+```{r}
+till.2015$Longitude = as.numeric(till.2015$Longitude)
+till.2015$Latitude =  as.numeric(till.2015$Latitude)
+center_lon = median(till.2015$Longitude,na.rm = TRUE)
+center_lat = median(till.2015$Latitude,na.rm = TRUE)
+```
+
+
+```{r}
+till.2015 %>% leaflet() %>%addProviderTiles("Esri.NatGeoWorldMap") %>%
+  
+  addMarkers(lng = ~Longitude, lat = ~Latitude,clusterOptions = markerClusterOptions()) %>%
+    # controls
+  
+  setView(lng=center_lon, lat=center_lat,zoom = 12) 
+```
+
+```{r}
+names(xhist)[6] = "DateCreated"
+
+```
+
+Trend of 4311 calls
+```{r}
+
+xhist %>%
+  mutate(year = format(DateCreated, format="%Y") )%>%
+  mutate(month = format(DateCreated, format="%m")) %>%
+  filter(!is.na(year)) %>%
+  filter(!is.na(month)) %>%
+  group_by(year,month) %>%
+  summarise(Count = n()) %>%
+  arrange(year,month) %>%
+  mutate(YearMonth = make_date(year=year,month=month) ) %>%
+  
+
+  ggplot(aes(x=YearMonth,y=Count)) +
+  geom_line(size=1, color="red")+
+  geom_point(size=3, color="red") +
+  labs(x = 'Time', y = 'Count',title = 'Trend of 4311 Calls') +
+  theme_bw()
+```
+
+```{r}
+Newark4311TrendData = xhist %>%
+  mutate(year = format(DateCreated, format="%Y") ) %>%
+  mutate(month = format(DateCreated, format="%m")) %>%
+  filter(!is.na(year)) %>%
+  filter(!is.na(month)) %>%
+  group_by(year,month) %>%
+  summarise(Count = n()) %>%
+  arrange(year,month)
+
+tsNewark4311TrendData = ts(Newark4311TrendData)
+
+datatable((tsNewark4311TrendData), style="bootstrap", class="table-condensed", options = list(dom = 'tp',scrollX = TRUE))
+```
+
+```{r}
+fit <- auto.arima(tsNewark4311TrendData[,3])
+
+preds = forecast(fit, h = 5)
+
+preds %>% autoplot(include=40) +theme_bw()
+```
+
+
+
+```{r}
+till.2015 %>%
+  mutate(month = format(DateCreated, format="%m")) %>%
+  filter(!is.na(month)) %>%
+  group_by(month) %>%
+  summarise(Count = n()) %>%
+  arrange(desc(Count)) %>%
+  ungroup() %>%
+  mutate(month = reorder(month,Count)) %>%
+  
+    ggplot(aes(x = month,y = Count)) +
+    geom_bar(stat='identity',colour="white", fill = fillColor2) +
+    geom_text(aes(x = month, y = 1, label = paste0("(",Count,")",sep="")),
+              hjust=0, vjust=.5, size = 4, colour = 'black',
+              fontface = 'bold') +
+    labs(x = 'Month', 
+         y = 'Count', 
+         title = 'Months with service requests counts') +
+    coord_flip() + 
+    theme_bw()
+```
+
+
+```{r}
+
+x2018 %>%
+  mutate(year = format(DateCreated, format="%Y") )%>%
+  mutate(month = format(DateCreated, format="%m")) %>%
+  filter(!is.na(year)) %>%
+  filter(!is.na(month)) %>%
+  group_by(year,month) %>%
+  summarise(Count = n()) %>%
+  arrange(year,month) %>%
+  mutate(YearMonth = make_date(year=year,month=month) ) %>%
+  
+
+  ggplot(aes(x=YearMonth,y=Count)) +
+  geom_line(size=1, color="red")+
+  geom_point(size=3, color="red") +
+  labs(x = 'Time', y = 'Count',title = 'Trend of 4311 Calls') +
+  theme_bw()
+```
+
+```{r}
+x2018 %>%
+  mutate(month = format(DateCreated, format="%m")) %>%
+  filter(!is.na(month)) %>%
+  group_by(month) %>%
+  summarise(Count = n()) %>%
+  arrange(desc(Count)) %>%
+  ungroup() %>%
+  mutate(month = reorder(month,Count)) %>%
+  
+    ggplot(aes(x = month,y = Count)) +
+    geom_bar(stat='identity',colour="white", fill = fillColor2) +
+    geom_text(aes(x = month, y = 1, label = paste0("(",Count,")",sep="")),
+              hjust=0, vjust=.5, size = 4, colour = 'black',
+              fontface = 'bold') +
+    labs(x = 'Month', 
+         y = 'Count', 
+         title = 'Months with service requests counts') +
+    coord_flip() + 
+    theme_bw()
+```
+
+```{r}
+na.omit(till.2015) %>%
+  group_by(Location) %>%
+  summarise(Count = length(Location)) %>%
+  arrange(desc(Count), .by_group = TRUE)
+  
+```
+
+Location Analisis of 2018
+
+```{r}
+na.omit(x2018) %>%
+  group_by(Location) %>%
+  summarise(Count = length(Location)) %>%
+  arrange(desc(Count), .by_group = TRUE)
+  
+```
+
+Departmants in 2018
+```{r}
+x2018 %>%
+  group_by(Typename,Department) %>%
+  summarise(Count = n()) %>%
+  ungroup() %>%
+  mutate(complaint_description = reorder(Department,Count)) %>%
+  arrange(desc(Count), .by_group = TRUE) %>%
+  head(50) %>%
+  
+  ggplot(aes(x = reorder(Department,Count),y = Count)) +
+  geom_bar(stat='identity',colour="white", fill = fillColor) +
+  labs(x = 'Agencies', 
+       y = 'Complaint Count', 
+       title = 'Number of Comlpaints With Agency') +
+  coord_flip() + 
+  theme_bw()
+
+```
+
+```{r}
+na.omit(x2018) %>%
+  group_by(Location,Typename) %>%
+  summarise(Count = length(Location)) %>%
+  arrange(desc(Count), .by_group = TRUE)
+ 
+```
+
+```{r}
+na.omit(x2018) %>%
+  group_by(Location,Typename)  %>%
+  summarise(Count = length(Typename)) %>%
+  arrange(desc(Count), .by_group = TRUE)
+
+```
+
+```{r}
+
+Newark4311SampleAll = till.2015 %>%
+  filter(!is.na(Latitude) ) %>%
+  filter(!is.na(Longitude)) 
+
+leaflet() %>% addProviderTiles("Esri.NatGeoWorldMap") %>%
+  
+addCircles(data = Newark4311SampleAll,lng = ~Longitude, lat = ~Latitude, 
+           color = ~c("red"))  %>%
+
+  # controls
+  setView(lng=center_lon, lat=center_lat,zoom = 15) 
+
+```
+
+```{r}
+library(leaflet.extras)
+leaflet() %>% addProviderTiles("Esri.NatGeoWorldMap") %>%
+  setView(lng=center_lon, lat=center_lat,zoom = 17) %>%
+  addHeatmap( data = Newark4311SampleAll,
+    lng = ~Longitude, lat = ~Latitude, 
+    blur = 20, max = 0.05, radius = 15
+) %>%
+  addResetMapButton() %>%
+  addSearchGoogle() %>%
+  addFullscreenControl()
+
+
+```
+
+```{r}
+top10complaints = na.omit(till.2015) %>%
+  group_by(Complaint) %>%
+  summarise(Count = length(Location)) %>%
+  arrange(desc(Count), .by_group = TRUE)
+  
+
+```
+
+
+```{r}
+#as.factor(till.2015$Complaint)
+```
+
+```{r}
+x2018$Location %>% 
+   str_subset(pattern = "^*11TH AVE*")
+ab = "169 ALEXANDER ST, Newark,New Jersey" 
+if(str_subset(pattern = "^*ALEXANDER*")){
+  print("OK")
+}
+except = c("ALEXANDER","11TH AVE")
+grepl(paste(except, collapse = "|"),ab)
+```
+
+ 
+```{r}
+# Geocoding script for large list of addresses. 
+
+# Shane Lynn 10/10/2013
+#install.packages("ggmap")
+
+#load up the ggmap library
+library(ggmap)
+# get the input data
+infile <- "input"
+data <- x2018
+
+# get the address list, and append "Ireland" to the end to increase accuracy 
+# (change or remove this if your address already include a country etc.)
+addresses = data$Location
+addresses = paste0(addresses, ", Newark,New Jersey")
+
+except = c("ALEXANDER","11TH AVE","NORWOOD","WEST END AVE","SALEM","STUYVESANT","CLINTON","PLEASANT")
+
+
+#define a function that will process googles server responses for us.
+getGeoDetails <- function(address){ 
+  if(grepl(paste(except, collapse = "|"),address)){
+    return(data.frame(lat=NA, long=NA, accuracy=NA, formatted_address=NA, address_type=NA, status=NA)
+   )
+  }
+   #use the gecode function to query google servers
+   geo_reply = geocode(address, output='all', messaging=TRUE, override_limit=TRUE)
+   #now extract the bits that we need from the returned list
+   answer <- data.frame(lat=NA, long=NA, accuracy=NA, formatted_address=NA, address_type=NA, status=NA)
+   
+   answer$status <- geo_reply$status
+
+   #if we are over the query limit - want to pause for an hour
+   while(geo_reply$status == "OVER_QUERY_LIMIT"){
+       print("OVER QUERY LIMIT - Pausing for 1 hour at:") 
+       time <- Sys.time()
+       print(as.character(time))
+       Sys.sleep(60*60)
+       geo_reply = geocode(address, output='all', messaging=TRUE, override_limit=TRUE)
+       answer$status <- geo_reply$status
+   }
+
+   #return Na's if we didn't get a match:
+   if (geo_reply$status != "OK"){
+       return(answer)
+   }
+   #else, extract what we need from the Google server reply into a dataframe:
+   answer$lat <- geo_reply$results[[1]]$geometry$location$lat
+   answer$long <- geo_reply$results[[1]]$geometry$location$lng   
+   if (length(geo_reply$results[[1]]$types) > 0){
+       answer$accuracy <- geo_reply$results[[1]]$types[[1]]
+   }
+   answer$address_type <- paste(geo_reply$results[[1]]$types, collapse=',')
+   answer$formatted_address <- geo_reply$results[[1]]$formatted_address
+
+   return(answer)
+}
+
+#initialise a dataframe to hold the results
+geocoded <- data.frame()
+# find out where to start in the address list (if the script was interrupted before):
+startindex <- 1
+#if a temp file exists - load it up and count the rows!
+tempfilename <- paste0(infile, '_temp_geocoded.rds')
+if (file.exists(tempfilename)){
+       print("Found temp file - resuming from index:")
+       geocoded <- readRDS(tempfilename)
+       startindex <- nrow(geocoded)
+       print(startindex)
+}
+
+# Start the geocoding process - address by address. geocode() function takes care of query speed limit.
+for (ii in seq(startindex, length(addresses))){
+   print(paste("Working on index", ii, "of", length(addresses)))
+   #query the google geocoder - this will pause here if we are over the limit.
+   result = getGeoDetails(addresses[ii]) 
+   print(result$status)     
+   result$index <- ii
+   #append the answer to the results file.
+   geocoded <- rbind(geocoded, result)
+   #save temporary results as we are going along
+   saveRDS(geocoded, tempfilename)
+}
+
+#now we add the latitude and longitude to the main data
+data$lat <- geocoded$lat
+data$long <- geocoded$long
+data$accuracy <- geocoded$accuracy
+
+#finally write it all to the output files
+saveRDS(data, paste0("../data/", infile ,"_geocoded.rds"))
+write.table(data, file=paste0("../data/", infile ,"_geocoded.csv"), sep=",", row.names=FALSE)
+
+```
+
+```{r}
+dim(geocoded)
+
+geocoded = geocoded[-c(527),]
+
+write.csv(geocoded, file = "Geocoded2018.csv",row.names=FALSE)
+
+write.csv(x2018, file = "x2018.csv",row.names=FALSE)
+
+
+write.csv(till.2015, file = "till2015.csv",row.names=FALSE)
+
+
+write.csv(x2015, file = "x2015.csv",row.names=FALSE)
+
+
+write.csv(xhist, file = "xhist.csv",row.names=FALSE)
+
+
+write.csv(overall4311, file = "overall4311.csv",row.names=FALSE)
+
+```
+
+```{r}
+names(till.2015)
+x2018$Latitude = geocoded$lat
+
+x2018$Longitude = geocoded$long
+
+```
+
+```{r}
+Geocoded2018 %>%
+  filter(!is.na(lat) ) %>%
+  filter(!is.na(long)) %>%
+
+leaflet() %>% addProviderTiles("Esri.NatGeoWorldMap") %>%
+  
+addMarkers(lng = ~long, lat = ~lat
+           ,clusterOptions = markerClusterOptions())  %>%
+
+  # controls
+  setView(lng=center_lon, lat=center_lat,zoom = 15) 
+
+```
+
+```{r}
+
+```
+

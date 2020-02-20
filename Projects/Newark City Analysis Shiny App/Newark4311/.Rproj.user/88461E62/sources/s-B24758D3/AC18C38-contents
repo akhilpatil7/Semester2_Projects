@@ -1,0 +1,327 @@
+---
+title: "DAV_!"
+author: "Akhil Patil"
+date: "April 11, 2019"
+output:
+  html_document:
+    df_print: paged
+always_allow_html: yes
+---
+
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(lubridate)
+library(leaflet)
+#install.packages("DT")
+library(rpart)
+#library 
+library(forecast)
+library(rpart.plot)
+library(caret)
+
+```
+
+
+```{r}
+df <- read.csv("D:/Downloads/311_Service_Requests_from_2010_to_Present.csv", stringsAsFactors = FALSE)
+
+dim(df)
+```
+
+```{r}
+colSums(is.na(df))
+```
+BBL column has almost 1M values missing so it will not be useful for our analysis.
+
+```{r}
+summary(df)
+```
+
+Data Cleaning 
+
+```{r}
+sum(is.na(df))
+sum(complete.cases(df))
+
+```
+
+Assign Blank cells with NA's 
+```{r}
+df[df == ""] = "NA"
+```
+
+```{r}
+sum(is.na(df))
+```
+
+Omit all the NA's
+```{r}
+df = na.omit(df)
+```
+
+Check the Final NA's and Complete Cases
+```{r}
+sum(is.na(df))
+sum(complete.cases(df))
+```
+
+Parse Date
+```{r}
+
+df$Created.Date = as.POSIXct(df$Created.Date, format = "%m/%d/%Y %I:%M:%S %p")
+
+df$Closed.Date  = as.POSIXct(df$Closed.Date, format = "%m/%d/%Y %I:%M:%S %p")
+
+head(df)
+```
+
+```{r}
+str(df)
+```
+
+
+```{r}
+fillColor = "#FFA07A"
+fillColor2 = "#F1C40F"
+
+```
+
+
+```{r}
+df %>%
+  group_by(Descriptor) %>%
+  summarise(Count = n()) %>%
+  ungroup() %>%
+  mutate(complaint_description = reorder(Descriptor,Count)) %>%
+  arrange(desc(Count)) %>%
+  head(10) %>%
+  
+  ggplot(aes(x = reorder(Descriptor,Count),y = Count )) +
+  geom_bar(stat='identity',colour="white", fill = fillColor2) +
+  geom_text(aes(x = complaint_description, y = 1, label = paste0("(",Count,")",sep="")),
+            hjust=0, vjust=.5, size = 4, colour = 'black',
+            fontface = 'bold') +
+  labs(x = 'Complaint Descriptors', 
+       y = 'Count', 
+       title = 'Highest Complaint Descriptors') +
+  coord_flip() + 
+  theme_bw()
+
+```
+
+```{r}
+
+df %>%
+  group_by(Complaint.Type) %>%
+  summarise(Count = n()) %>%
+  ungroup() %>%
+  mutate(complaint_description = reorder(Complaint.Type,Count)) %>%
+  arrange(desc(Count), .by_group = TRUE) %>%
+  head(10) %>%
+  
+  ggplot(aes(x = reorder(Complaint.Type,Count),y = Count)) +
+  geom_bar(stat='identity',colour="white", fill = fillColor) +
+  geom_text(aes(x = complaint_description, y = 1, label = paste0("(",Count,")",sep="")),
+            hjust=0, vjust=.5, size = 4, colour = 'black',
+            fontface = 'bold') +
+  labs(x = 'Complaint Type', 
+       y = 'Count', 
+       title = 'Highest Complaint Type') +
+  coord_flip() + 
+  theme_bw()
+```
+
+```{r}
+center_lon = median(df$Longitude,na.rm = TRUE)
+center_lat = median(df$Latitude,na.rm = TRUE)
+
+NYC311SampleAll = df %>% sample_n(50e3) %>%
+  filter(!is.na(Latitude) ) %>%
+  filter(!is.na(Longitude)) 
+
+
+leaflet() %>% addProviderTiles("Esri.NatGeoWorldMap") %>%
+  
+addCircles(data = NYC311SampleAll,lng = ~Longitude, lat = ~Latitude, 
+           color = ~c("red"))  %>%
+
+  # controls
+  setView(lng=center_lon, lat=center_lat,zoom = 15) 
+```
+
+```{r}
+NYC311SampleAll %>% leaflet() %>%addProviderTiles("Esri.NatGeoWorldMap") %>%
+  
+  addMarkers(lng = ~Longitude, lat = ~Latitude,clusterOptions = markerClusterOptions()) %>%
+    # controls
+  
+  setView(lng=center_lon, lat=center_lat,zoom = 12) 
+```
+
+```{r}
+
+df %>%
+  mutate(year = format(Created.Date, format="%Y") )%>%
+  mutate(month = format(Created.Date, format="%m")) %>%
+  filter(!is.na(year)) %>%
+  filter(!is.na(month)) %>%
+  group_by(year,month) %>%
+  summarise(Count = n()) %>%
+  arrange(year,month) %>%
+  mutate(YearMonth = make_date(year=year,month=month) ) %>%
+  
+
+  ggplot(aes(x=YearMonth,y=Count)) +
+  geom_line(size=1, color="red")+
+  geom_point(size=3, color="red") +
+  labs(x = 'Time', y = 'Count',title = 'Trend of 311 Calls') +
+  theme_bw()
+```
+
+```{r}
+df %>%
+  mutate(month = format(Created.Date, format="%m")) %>%
+  filter(!is.na(month)) %>%
+  group_by(month) %>%
+  summarise(Count = n()) %>%
+  arrange(desc(Count)) %>%
+  ungroup() %>%
+  mutate(month = reorder(month,Count)) %>%
+  
+    ggplot(aes(x = month,y = Count)) +
+    geom_bar(stat='identity',colour="white", fill = fillColor2) +
+    geom_text(aes(x = month, y = 1, label = paste0("(",Count,")",sep="")),
+              hjust=0, vjust=.5, size = 4, colour = 'black',
+              fontface = 'bold') +
+    labs(x = 'Month', 
+         y = 'Count', 
+         title = 'Months with service requests counts') +
+    coord_flip() + 
+    theme_bw()
+```
+
+
+```{r}
+
+df$Created.Year = format(df$Created.Date,'%Y')
+
+df$Created.Year = as.factor(df$Created.Year)
+df$Borough = as.factor(df$Borough)
+df$Complaint.Type = as.factor(df$Complaint.Type)
+df$City = as.factor(df$City)
+df$Agency = as.factor(df$Agency)
+df$Descriptor = as.factor(df$Descriptor)
+df$Street.Name = as.factor(df$Street.Name)
+df$Status = as.factor(df$Status)
+df$City = as.factor(df$City)
+df$Borough = as.factor(df$Borough)
+
+
+table(df$Created.Year)
+
+```
+
+
+```{r}
+ggplot(df,aes(x = Borough, fill= Created.Year)) +
+  geom_bar(stat='count',colour="white") +
+  labs(x = 'Borough', 
+       y = 'Complaint Count', 
+       title = 'Volume of Complaints per Borough') +
+  coord_flip() +
+  theme_bw()
+```
+
+
+```{r}
+df %>%
+  group_by(Complaint.Type,Agency.Name) %>%
+  summarise(Count = n()) %>%
+  ungroup() %>%
+  mutate(complaint_description = reorder(Agency.Name,Count)) %>%
+  arrange(desc(Count), .by_group = TRUE) %>%
+  head(50) %>%
+  
+  ggplot(aes(x = reorder(Agency.Name,Count),y = Count)) +
+  geom_bar(stat='identity',colour="white", fill = fillColor) +
+  labs(x = 'Agencies', 
+       y = 'Complaint Count', 
+       title = 'Number of Comlpaints With Agency') +
+  coord_flip() + 
+  theme_bw()
+
+
+```
+
+
+
+```{r}
+ggplot(df,aes(x = Created.Year, fill= Borough)) +
+  geom_bar(stat='count',colour="white") +
+  labs(x = 'Years', 
+       y = 'Complaint Count', 
+       title = 'Number of Comlpaints per Year') +
+  theme_bw()
+
+```
+
+```{r}
+colnames(df)
+```
+
+
+Dividing data into Train & Test
+
+```{r}
+
+## 75% of the sample size
+smp_size <- floor(0.75 * nrow(df))
+
+## set the seed to make your partition reproducible
+set.seed(123)
+train_ind <- sample(seq_len(nrow(df)), size = smp_size)
+
+train1 <- df[train_ind, ]
+test1 <- df[-train_ind, ]
+
+```
+
+```{r}
+dim(train1)
+
+dim(test1)
+```
+
+```{r}
+colnames(train1)
+```
+
+
+```{r}
+fit.dec = rpart(Complaint.Type ~ Agency +  Status, data = train1[0:10000,])
+```
+
+```{r}
+summary(fit.dec)
+rpart.plot(fit.dec ,box.palette="RdBu", shadow.col="gray", nn=TRUE)
+```
+
+```{r}
+plotcp(fit.dec)
+```
+
+```{r}
+fit.predict = predict(fit.dec,test1,type = c("class"))
+
+```
+
+```{r}
+
+conf.matrix = confusionMatrix(fit.predict,test1$Complaint.Type)
+
+conf.matrix$overall
+```
+
+

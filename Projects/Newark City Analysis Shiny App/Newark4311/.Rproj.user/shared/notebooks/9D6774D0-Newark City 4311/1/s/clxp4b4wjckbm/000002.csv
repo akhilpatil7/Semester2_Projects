@@ -1,0 +1,4 @@
+"0","xhist$`Request Date` = as.POSIXct(xhist$`Request Date`)"
+"0","x2015$`Request Date` = ""2015"""
+"0","x2015$`Request Date` = as.Date(x2015$`Request Date`,format = ""%Y"")"
+"0","x2018$DateCreated = as.POSIXct(x2018$DateCreated, format = ""%b %d %Y"")"

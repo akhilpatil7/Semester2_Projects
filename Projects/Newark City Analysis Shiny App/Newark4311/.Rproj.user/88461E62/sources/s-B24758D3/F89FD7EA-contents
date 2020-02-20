@@ -1,0 +1,153 @@
+library(shiny)
+library(ggplot2)  # for the diamonds dataset
+
+
+# Required libs
+library(httr)
+library(jsonlite)
+library(lubridate)
+
+library(tidyverse)
+library(stringr)
+library(leaflet)
+#install.packages("DT")
+library(rpart)
+library(DT)
+library(forecast)
+library(rpart.plot)
+library(caret)
+
+
+#Parsing Newark Historic data
+urls.hist = c("http://data.ci.newark.nj.us/mk/api/3/action/datastore_search?resource_id=1cebcf44-3b2c-4f60-9d5d-817cb35bf9df&limit=40000",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%221cebcf44-3b2c-4f60-9d5d-817cb35bf9df%22%20WHERE%20_id%20%3E%2031889",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%221cebcf44-3b2c-4f60-9d5d-817cb35bf9df%22%20WHERE%20_id%20%3E%2063889",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%221cebcf44-3b2c-4f60-9d5d-817cb35bf9df%22%20WHERE%20_id%20%3E%2095888")
+xhist = data.frame()
+
+for(i in urls.hist ){
+  raw.result <- GET(url = i)
+  this.raw.content <- rawToChar(raw.result$content)
+  this.content <- fromJSON(this.raw.content)
+  json_file <- lapply(this.content, function(x) {
+    x[sapply(x, is.null)] <- NA
+    unlist(x)
+  })
+  
+  xhistoric = this.content$result$records
+  xhistoric = xhistoric[,c("Type Name","Type Id","Street Address" , "Longitude","Request Id","Request Date", "Latitude" , "_id" ,"ID")]
+  xhist = rbind(xhist,xhistoric)
+}
+
+url = "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search?resource_id=bc8e29eb-3c53-418c-a42a-4dbbaae668c2&limit=60000"
+
+raw.result <- GET(url = url)
+this.raw.content <- rawToChar(raw.result$content)
+this.content <- fromJSON(this.raw.content)
+
+json_file <- lapply(this.content, function(x) {
+  x[sapply(x, is.null)] <- NA
+  unlist(x)
+})
+
+x2015 = this.content$result$records
+
+
+urls.2018 = c("http://data.ci.newark.nj.us/mk/api/3/action/datastore_search?resource_id=b923c1ad-7246-400b-a593-785f67677b94&limit=68408",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%22b923c1ad-7246-400b-a593-785f67677b94%22%20WHERE%20_id%20%3E%2031993",
+              "http://data.ci.newark.nj.us/mk/api/3/action/datastore_search_sql?sql=SELECT%20*%20from%20%22b923c1ad-7246-400b-a593-785f67677b94%22%20WHERE%20_id%20%3E%2066495")
+x2018 = data.frame()
+
+for(i in urls.2018 ){
+  raw.result <- GET(url = i)
+  this.raw.content <- rawToChar(raw.result$content)
+  this.content <- fromJSON(this.raw.content)
+  json_file <- lapply(this.content, function(x) {
+    x[sapply(x, is.null)] <- NA
+    unlist(x)
+  })
+  
+  xtemp = this.content$result$records
+  xtemp = xtemp[,c("Complaint","DateCreated","Typename","Location","Lot", "ComplaintID","Department" ,"_id" ,"Block")]
+  x2018 = rbind(x2018,xtemp)
+}
+
+
+x2015$`Street Address` = paste(x2015$`Street Number`,x2015$`Street Name`)
+
+x2015$`Street Name` = NULL
+x2015$`Street Number` = NULL
+
+x2015$`Street Address`[x2015$`Street Address` == " "] = NA
+xhist[xhist == " "] = NA
+
+
+xhist$`Request Date` = as.POSIXct(xhist$`Request Date`)
+
+x2015$`Request Date` = "2015"
+x2015$`Request Date` = as.Date(x2015$`Request Date`,format = "%Y")
+
+
+x2018$DateCreated = as.POSIXct(x2018$DateCreated, format = "%b %d %Y")
+
+till.2015 = rbind(xhist,x2015)
+names(till.2015)[1:3]<-c("Complaint","ComplaintID","Location")
+names(till.2015)[6]<-c("DateCreated")
+
+overall4311 = rbind(till.2015[,c(1,3,6)], x2018[,c(1,4,2)])
+
+fillColor = "#FFA07A"
+fillColor2 = "#F1C40F"
+
+
+
+ui <- fluidPage(
+  title = "Examples of DataTables",
+  sidebarLayout(
+    sidebarPanel(
+      conditionalPanel(
+        'input.dataset === "till.2015"',
+        checkboxGroupInput("show_vars", "Columns in diamonds to show:",
+                           names(till.2015), selected = names(till.2015))
+      ),
+      conditionalPanel(
+        'input.dataset === "x2018"',
+        helpText("Click the column header to sort a column.")
+      ),
+      conditionalPanel(
+        'input.dataset === "overall4311"',
+        helpText("Display 5 records by default.")
+      )
+    ),
+    mainPanel(
+      tabsetPanel(
+        id = 'dataset',
+        tabPanel("diamonds", DT::dataTableOutput("mytable1")),
+        tabPanel("mtcars", DT::dataTableOutput("mytable2")),
+        tabPanel("iris", DT::dataTableOutput("mytable3"))
+      )
+    )
+  )
+)
+
+server <- function(input, output) {
+  
+  # choose columns to display
+  till.20152 = till.2015[sample(nrow(till.2015), 1000), ]
+  output$mytable1 <- DT::renderDataTable({
+    DT::datatable(till.20152[, input$show_vars, drop = FALSE])
+  })
+  
+  # sorted columns are colored now because CSS are attached to them
+  output$mytable2 <- DT::renderDataTable({
+    DT::datatable(x2018, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  })
+  
+  # customize the length drop-down menu; display 5 rows per page by default
+  output$mytable3 <- DT::renderDataTable({
+    DT::datatable(overall4311, options = list(lengthMenu = c(5, 30, 50), pageLength = 5))
+  })
+  
+}
+
+shinyApp(ui, server)

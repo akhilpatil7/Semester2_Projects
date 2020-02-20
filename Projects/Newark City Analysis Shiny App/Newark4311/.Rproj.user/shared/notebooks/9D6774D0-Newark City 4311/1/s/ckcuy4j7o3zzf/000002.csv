@@ -1,0 +1,6 @@
+"0","x2015$`Street Address`[x2015$`Street Address` == "" ""] = NA"
+"0","sum(is.na(x2015))"
+"1","[1]"
+"1"," 2070"
+"1","
+"

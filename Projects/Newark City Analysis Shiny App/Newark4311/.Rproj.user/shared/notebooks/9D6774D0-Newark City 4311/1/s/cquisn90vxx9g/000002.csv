@@ -1,0 +1,3 @@
+"0","fit <- auto.arima(tsNewark4311TrendData[,3])"
+"0","preds = forecast(fit, h = 5)"
+"0","preds %>% autoplot(include=40) +theme_bw()"

@@ -1,0 +1,6 @@
+"0","till.2015 %>% leaflet() %>%addProviderTiles(""Esri.NatGeoWorldMap"") %>%"
+"0","  "
+"0","  addMarkers(lng = ~Longitude, lat = ~Latitude,clusterOptions = markerClusterOptions()) %>%"
+"0","    # controls"
+"0","  "
+"0","  setView(lng=center_lon, lat=center_lat,zoom = 12) "

@@ -1,0 +1,4 @@
+"0","till.2015$Longitude = as.numeric(till.2015$Longitude)"
+"0","till.2015$Latitude =  as.numeric(till.2015$Latitude)"
+"0","center_lon = median(till.2015$Longitude,na.rm = TRUE)"
+"0","center_lat = median(till.2015$Latitude,na.rm = TRUE)"

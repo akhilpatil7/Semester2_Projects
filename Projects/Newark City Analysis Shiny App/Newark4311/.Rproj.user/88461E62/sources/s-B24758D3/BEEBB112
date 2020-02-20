@@ -1,0 +1,22 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1557931993898.000,
+    "dirty" : true,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "0",
+    "id" : "BEEBB112",
+    "lastKnownWriteTime" : 1557938969,
+    "last_content_update" : 1557939060554,
+    "path" : "F:/Newark City Data/server.R",
+    "project_path" : null,
+    "properties" : {
+        "cursorPosition" : "101,0",
+        "scrollLine" : "79"
+    },
+    "relative_order" : 3,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
