@@ -1,0 +1,47 @@
+x.input = unique(NYC_Jobs[which(NYC_Jobs$`Civil Service Title`== order.top10$offered.jobs),c("Agency","Salary Range From","Salary Range To")])$Agency
+
+
+
+#Q4."Salary Breakdown".7.a.iv use the same which condition from the x.input value to find the average of the Salary Range To and Salary Range From values
+
+#NYC_Jobs[NYC_Jobs$Agency == unique(NYC_Jobs[which(NYC_Jobs$Agency  == x.input),]$Agency),]$`Salary Range From`
+
+#y.input <- unique(NYC_Jobs[NYC_Jobs$Agency  == x.input , c("Salary Range From","Salary Range To")]) 
+
+Salary_Range_From = unique(NYC_Jobs[which(NYC_Jobs$`Civil Service Title`== order.top10$offered.jobs),c("Agency","Salary Range From","Salary Range To")])$`Salary Range From`
+
+
+Salary_Range_To = unique(NYC_Jobs[which(NYC_Jobs$`Civil Service Title`== order.top10$offered.jobs),c("Agency","Salary Range From","Salary Range To")])$`Salary Range To`
+
+new.merged.dtaset = data.frame(x.input,Salary_Range_From,Salary_Range_To) 
+
+index  = 1
+
+for ( i in new.merged.dtaset$x.input){
+  new.merged.dtaset$averageSalary[index] = sum(Salary_Range_From[index],Salary_Range_To[index])/2
+index = index+ 1
+}
+y.input = data.frame( new.merged.dtaset$x.input, new.merged.dtaset$averageSalary)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+for (i in 1:10){
+  x.input[i]<- NYC_Jobs[which(NYC_Jobs$`Civil Service Title` == order.top10[i,]$offered.jobs),]$Agency
+
+#Q4."Salary Breakdown".7.a.iv use the same which condition from the x.input value to find the average of the Salary Range To and Salary Range From values
+  y.input[i] <- (NYC_Jobs[which(NYC_Jobs$`Civil Service Title` == order.top10[i,]$offered.jobs),]$`Salary Range To` +  NYC_Jobs[which(NYC_Jobs$`Civil Service Title` == order.top10[i,]$offered.jobs),]$`Salary Range From`)/2
+ i = i+1
+}

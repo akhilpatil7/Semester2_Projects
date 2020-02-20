@@ -1,0 +1,277 @@
+---
+title: "DAV Assignment1"
+author: "Akhil Patil"
+date: "February 23, 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Problem 1
+
+Q 1.1 Import the df1 winter_olymic.csv. Identify the column names and dimension of the data.
+import the df1
+```{r}
+df1 = read.csv("D:/Downloads/winter_olympic.csv")
+```
+
+check the column names for the df1
+
+```{r}
+head(df1)
+colnames(df1)
+
+```
+
+Check the dimension of df1
+
+```{r}
+
+dim(df1)
+
+```
+
+Q1.2 Data is currently sorted by Rank. Sort data by total medals and country. Assign sorted data to a new data frame.
+
+Creating a new dataframe and assigning the newly sorted df1 to it.
+
+```{r}
+
+newdata <- df1[order(df1$Total, df1$NOC),]
+newdata
+
+```
+
+Q1.3 Compute the following statistics:
+a) What is the median number of gold, silver, bronze medals ? Also look at their mean.
+
+MEDIAN
+
+
+```{r}
+
+medianGoldMedals <- median(df1$Gold, na.rm = FALSE)
+medianGoldMedals
+medianSilverMedals <- median(df1$Silver, na.rm = FALSE)
+medianSilverMedals
+medianBronzeMedals <- median(df1$Bronze, na.rm = FALSE)
+medianBronzeMedals
+
+```
+
+MEAN
+
+
+```{r}
+
+result.meanGold <- mean(df1$Gold, trim = 0, na.rm = FALSE)
+result.meanGold
+result.meanSilver <- mean(df1$Silver, trim = 0, na.rm = FALSE)
+result.meanSilver
+result.meanBronze <- mean(df1$Bronze, trim = 0, na.rm = FALSE)
+result.meanBronze
+
+```
+
+b) For gold, look at summary stats, including:IQR, min, max, mean, var, sd, skew
+we get IQR, min, max, mean, meadian using Summary function.
+IQR is the difference between 75th and 25th percentile
+
+```{r}
+
+summary(df1$Gold)
+```
+
+
+```{r}
+IQR(df1$Gold)
+```
+
+Thus IQR for gold medals is 5.750-1.000 = 4.750
+
+we get variance of gold medals column from:
+
+```{r}
+var(df1$Gold)
+```
+We get standard deviation of gold column from:
+
+
+```{r}
+sd(df1$Gold)
+```
+we can get skewness of gold column by:
+
+
+```{r}
+#install.packages("moments")
+library(moments)
+skewness(df1$Gold)
+```
+
+
+Q1.4
+What is the correlation between Rank and Total medals? Is this expected or surprising?
+
+
+```{r}
+cor( df1$Total,df1$Rank)
+plot(df1$Rank, df1$Total)
+linearRegression = lm(df1$Rank~df1$Total)
+abline(linearRegression)
+summary(linearRegression)
+
+```
+
+Summarizing the linear model of Rank vs Total considering Total as the independent variable and Rank as the dependent variable 
+we get a p-value that is between 0 and 0.0001 which shows that total of number of medals has high impact on determing the Rank.
+Thus there exists a high correlation between Total number of Medal and Rank.
+It is expected that the value of correlation is negative towards -1 since as the value of total Medals increases the value of rank decreases following an inverse relation i.e if total number of highest medals is 100 that rank will be 1. This means the variable is changing in negative direction.
+
+Problem 2
+Q2.1
+Import the df1 movies.csv. Look at the column names and dimension of the data
+
+```{r}
+
+df2 = read.csv("D:/Downloads/movies.csv")
+
+```
+
+viewing column names of df1
+```{r}
+colnames(df2)
+
+```
+
+
+Analyzing dimension of data
+
+```{r}
+dim(df2)
+```
+
+Q 2.2
+
+Obtain the following scatterplots
+a) Tickets Sold and Gross (Is the trend expected?)
+According to me this trend was expected, since more the tickets sold more will be the gross_sales
+```{r}
+
+plot(df2$Tickets_Sold, df2$Gross_Sales, main="Scatterplot of Ticket sold vs Gross", xlab= "Tickets Sold",ylab = "Gross", pch=20, col="red")
+
+```
+
+b) redo scatter plot, adjusting scales, divide by 1000
+```{r}
+plot(df2$Tickets_Sold/1000, df2$Gross_Sales/1000, main="Scatterplot of Ticket sold vs Gross", xlab= "Tickets Sold",ylab = "Gross", pch=20, col="red")
+
+```
+
+
+c) redo scatter plot, adjusting scales, divide by 100,000
+```{r}
+plot(df2$Tickets_Sold/100000, df2$Gross_Sales/100000, main="Scatterplot of Ticket sold vs Gross", xlab= "Tickets Sold",ylab = "Gross", pch=20, col="red")
+
+```
+
+d) redo scatter plot, adjusting scales, divide by 1,000,000
+```{r}
+plot(df2$Tickets_Sold/1000000, df2$Gross_Sales/1000000, main="Scatterplot of Ticket sold vs Gross", xlab= "Tickets Sold",ylab = "Gross", pch=20, col="red")
+
+```
+
+Q2.3
+What is the correlation between tickets sold and sales? Is this expected?
+This is expected since more the number of tickets sold for a particular movie, more will be the total gross sale for that movie.
+
+```{r}
+plot(df2$Gross_Sales,df2$Tickets_Sold)
+regression_model = lm(df2$Gross_Sales~df2$Tickets_Sold)
+abline(regression_model)
+summary(regression_model)
+cor(df2$Gross_Sales,df2$Tickets_Sold)
+
+```
+
+
+Q2.4
+Scatter plots with lines
+4a)Do scatter plots with millions scale add a regression line.
+
+```{r}
+plot(df2$Tickets_Sold/1000000, df2$Gross_Sales/1000000, 
+     pch = 20, col = "#756bb1")
+abline(lm(df2$Gross_Sales ~ df2$Tickets_Sold), col="red")
+
+```
+
+
+4b. Add xlabel, ylabel and plot title
+
+```{r}
+plot(df2$Tickets_Sold/1000000, df2$Gross_Sales/1000000, 
+     pch = 20, col = "#756bb1",
+     xlab = "Tickets sold (In million units)", 
+     ylab = "Gross Sales (In million $)", 
+     main = "Movies - Tickets Sold vs Gross Sales")
+abline(lm(df2$Gross_Sales ~ df2$Tickets_Sold), col="red")#Q5
+
+```
+
+
+Q2.5. Obtain a bar plot of genre
+we get a barplot of various movie genres using the below mentioned function
+
+```{r}
+plot(df2$Genre, type = "bar", xlab ='Genre', ylab = 'Frequency', main = "Barplot of Movie Genre")
+
+```
+
+Problem 3
+Q3.1. FIND FREQUENCY, RELATIVE, CUMULATIVE frequency<br>
+
+SCORES	  FREQUENCY                             CUMULATIVE FREQUENCY        RELATIVE FREQUENCY<br>
+30-39	- 37                            =    1         1                           0.02<br>
+40-49  - 44,49,48                      =    3         4                           0.07<br>
+50-59	- 51,55,54,58,54                =    5         9                           0.12<br>
+60-69	- 69,64,67,67,67,62,69,64,69    =    9         18                          0.21<br>
+70-79	- 76,78,78,72,72,76,=           =    6         24                          0.14<br>
+80-89	- 84,88,80,83,84,83,86,80,82,80 =   10         34                          0.23<br>
+90-99	- 93,93,92,96,97,97,93,95       =    8         42                          0.19<br>
+
+
+Histogram plot
+
+```{r}
+
+freq <- c(84,88,76,44,80,83,51,93,69,78,49,55,78,93,64,84,54,92,96,72,97,37,97,67,83,93,95,67,72,67,86,76,80,58,62,69,64,82,48,54,80,69)
+hist(freq,breaks=5, main="HISTOGRAM", xlab="Scores", ylab="Frequencies", col = "purple")
+
+```
+
+```{r}
+scores = c(84,88,76,44,80,83,51,93,69,78,49,55,78,93,64,84,
+ 54,92,96,72,97,37,97,67,83,93,95,67,72,67,86,76,
+ 80,58,62,69,64,82,48,54,80,69);
+bins = rep(0,length(scores));
+bins[scores >=30 & scores <= 39] = 1
+bins[scores >=40 & scores <= 49] = 2
+bins[scores >=50 & scores <= 59] = 3
+bins[scores >=60 & scores <= 69] = 4
+bins[scores >=70 & scores <= 79] = 5
+bins[scores >=80 & scores <= 89] = 6
+bins[scores >=90 & scores <= 99] = 7
+freq = data.frame(table(bins))
+Relfreq = data.frame(table(bins)/length(scores))
+Cumfreq = data.frame(freq,cumsum(table(bins)))
+bins = seq(29.5,99.5,by =10)
+hist(scores, breaks = bins, main = "Test Scores", xlab = "Test Scores", col = "red")
+```
+
+
+
+

@@ -1,0 +1,114 @@
+---
+title: "Flex Dashboard"
+output: flexdashboard::flex_dashboard
+---
+
+Page 1
+=====================================  
+    
+Column {data-width=600}
+-------------------------------------
+    
+### Chart 1
+    
+```{r}
+psam_p34 <- read.csv("D:/Downloads/psam_p34.csv")
+View(psam_p34)
+
+library(plotly)
+p <- plot_ly(alpha = 0.6) %>%
+  add_histogram(x = ~psam_p34$PWGTP26[1:500]) %>%
+  add_histogram(x = ~psam_p34$PWGTP26[1:500] + 100) %>%
+  layout(barmode = "overlay" ,
+            xaxis = list(title = "PWGTP26 values"),
+            yaxis = list(title = "Frequencies"),
+         title = "Histogram of PWGTP26"
+    )
+
+p
+
+```
+   
+Since dataset is big we can subset it for 500 values to see the detailed bars of the histogram.
+
+Column {data-width=400}
+-------------------------------------
+   
+### Chart 2
+
+
+```{r}
+data(psam_p34)
+#hist(psam_p34$PWGTP27)
+
+graph1=plot_ly(x = psam_p34$PWGTP27[1:1000], type = "histogram",histnorm = "probability") %>%
+  layout(xaxis = list(title = "PWGTP27 values"),
+            yaxis = list(title = "Frequencies"),
+         title = "Histogram of PWGTP27")
+graph1
+
+
+```   
+ 
+### Chart 3
+    
+
+```{r}
+hist(psam_p34$PWGTP28,
+     main="Histogram for psam_p34", 
+     xlab="PWGTP28", 
+     border="red")
+
+```
+
+Graphs {data-orientation=rows}
+=====================================     
+   
+Row {data-height=600}
+-------------------------------------
+
+### Chart 1
+
+```{r}
+#hist(psam_p34$PWGTP29)
+
+p <- plot_ly( x = ~psam_p34$PWGTP10[1:1000], y = ~psam_p34$PWGTP[1:1000], type = 'scatter', mode = 'markers',
+        marker = list( opacity = 0.5, color = 'rgb(255, 65, 54)')) %>%
+  layout(title = 'PUMS Dataset[PWGTP10 vs PWGTP ]',
+         xaxis = list(title = "PWGTP10 values"),
+         yaxis = list(title =  "PWGTP"))
+
+p
+
+
+```
+Above graph shows that the values of PGTWP & PGWTP10 are highly correlated and have increasing trend.l
+
+Row {data-height=400}
+-------------------------------------
+   
+### Chart 2
+
+```{r}
+#hist(psam_p34$PWGTP30)
+p <- plot_ly(y = ~psam_p34$PWGTP30[1:1000], type = "histogram") %>%
+  layout(title = 'Histogram Plot of PWGTP30',
+         xaxis = list(title = "Frequencies"),
+         yaxis = list(title =  "PWGTP30 values"))
+
+p
+
+```   
+    
+### Chart 3
+
+```{r}
+p <- plot_ly( x = ~psam_p34$CITWP, y = ~psam_p34$PWGTP, type = 'scatter', mode = 'markers',
+        marker = list( opacity = 0.5, color = 'rgb(255, 65, 54)')) %>%
+    layout(title = 'PUMS Dataset[CITWP vs PWGTP ]',
+         xaxis = list(title = "CITWP values"),
+         yaxis = list(title =  "PWGTP"))
+
+p
+```
+from above graph we can interpret that the data is skweed at the end and has very less observations at the start of 1940. Data is growing year by year.

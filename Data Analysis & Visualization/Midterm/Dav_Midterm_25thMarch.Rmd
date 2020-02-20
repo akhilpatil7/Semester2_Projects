@@ -1,0 +1,86 @@
+---
+title: "DAV_Midterm_25thMarch"
+author: "Akhil Patil"
+date: "March 25, 2019"
+output: word_document
+---
+
+DAV Mid - Term (Part 2)
+
+```{r}
+#install.packages("ISLR")
+library(ISLR)
+data(Auto)
+
+```
+
+A. Produce a scatterplot matrix which include all the variables in the data set.
+
+```{r}
+pairs(Auto)
+
+```
+
+B.Compute the matrix of correlations between the variables using the function cor(). You will need to exclude the "name" variable, which is qualitative.
+
+```{r}
+names(Auto)
+cor(Auto[1:8])
+```
+
+C. perform a multiple linear regression with "mpg" as the response and all other variables except "name" as the predictors.Comment on the following:
+
+```{r}
+fit2 <- lm(mpg ~ . - name, data = Auto)
+summary(fit2)
+
+```
+
+
+i. Is there a relationship between the predictors and the response ?
+
+By testing the hypothesis   
+                            h0:bi=0.
+                            ha: bi != 0
+Here h0 is Null Hypotheses ,ha is alternative hypotheses , bi are the predictor variables.
+
+we get pvalue < 2.2e-16 which is less than signifance level of 0.01 1%. We can reject Null hypothesis. So , there is relationship between the mpg and other variables. 
+
+ii. Which predictors appear to have a statistically significant relationship to the response ?
+
+ANS :- when we check the p-values associated with each predictor variables t-statistic. We can confirm that except "cylinders", "horsepower" and "acceleration" other predictors like  "displacement" ,  "weight" , "year"  , "origin"  are  statistically significant.
+
+
+iii. What does the coefficient for the "year" variable suggest ?
+
+The variable coefficient of the "year" tells us that the average effect of an increase of 1 year is an increase of 0.7507727 in "mpg" and all other predictors remaining constant. That is cars become more fuel efficient every year by almost 1 mpg / year.
+
+D. Obtain the 95% confidence interval of the coefficients
+
+```{r}
+confint(fit2,level = 0.95)
+
+```
+
+
+E. Produce diagnostic plots of the linear regression fit. Comment on any problems you see with the fit. Does the residual plots suggest any unusually large outliers ? Does the leverage plots identify any observations with unusually high leverages ?
+
+```{r}
+par(mfrow = c(2, 2))
+plot(fit2)
+
+```
+
+Plot of residuals versus fitted values indicates the presence of a bit non linearity in the data. The plot of residuals versus leverage shows that there a few outliers (higher than 2 or lower than -2) and one high leverage point(point 14).
+
+
+F)set aside one-forth of the observations to predict using the above linear model. compute the mean square error of the predicted values.
+
+```{r}
+auto_sub = Auto[sample(nrow(Auto), 294), ]
+fit1=lm(mpg ~ . - name, data = auto_sub)
+summary.fit1 = summary(fit1)
+MeanSquareError = mean(summary.fit1$residuals^2)
+MeanSquareError
+```
+

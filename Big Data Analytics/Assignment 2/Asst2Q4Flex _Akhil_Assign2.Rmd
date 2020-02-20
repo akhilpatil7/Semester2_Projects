@@ -1,0 +1,242 @@
+---
+title: "NYC Jobs Analysis"
+output: flexdashboard::flex_dashboard
+---
+
+Quantity Info
+=====================================  
+    
+Column {data-width=600}
+-------------------------------------
+    
+### Percentage Breakdown of Jobs by Agency
+    
+```{r}
+# INCLUDE YOUR SETUP / DATASET IMPORT IN THIS CHUNK 
+
+library(readr)
+library(plotly)
+
+NYC_Jobs <- read_csv("D:/Downloads/NYC_Jobs.csv")
+#View(NYC_Jobs)
+
+# CREATE A COPY OF YOUR DATASET HERE AND CHANGE COPY TO WHATEVER YOU LIKE
+copy<- NYC_Jobs
+
+# Q4."Quantity Info".1 BELOW LINE IS TO FIGURE OUT THE UNIQUE AGENCIES IN THE DATASET. PLEASE FILL OUT RELEVANT INFORMATION. CHANGE AGENCIES.VECTOR IF YOU WOULD LKE
+agencies.vector <- unique(copy$Agency)
+```
+
+```{r}
+# Q4."Quantity Info".2 BELOW WILL HANDLE THE SET UP FOR THE FOR LOOP. INITIALIZE THE VECTORS AS EMPTY VECTORS
+agency.names = {}
+agency.values = {}
+index = 1
+
+#Q4."Quantity Info".3 THIS IS THE FOR-LOOP. FIGURE OUT HOW TO ITERATE THROUGH AGENCIES.VECTOR
+for(i in agencies.vector){
+  manipulated.string<-i
+  # Q4."Quantity Info".3.a.i.1 WE ARE CHECKING FOR THE "DEPARTMENT OF" OR "DEPT OF" STRINGS IN THE NAMES AND THEN DELETING THEM ACCORDINGLY
+  
+  # CHECK BELOW FOR "DEPARTMENT OF" in manipulated.string using grepl ()
+  if(grepl("DEPARTMENT OF",manipulated.string)){
+    # REPLACE "DEPARTMENT OF" WITH AN EMPTY STRING USING sub()
+    manipulated.string<- sub("DEPARTMENT OF","",manipulated.string)
+  } else if (grepl("DEPT OF",manipulated.string)) { # CHECK BELOW FOR "DEPT OF" in manipulated.string using grepl
+     # REPLACE "DEPARTMENT OF" WITH AN EMPTY STRING USING sub()
+    manipulated.string<- sub("DEPT OF","",manipulated.string)
+  }
+  
+  # Q4."Quantity Info".3.a.ii.1 NOW WE WANT TO ADD THE MANIPULATED STRING TO OUR agency.names VECTOR. FIGURE OUT APPROPRIATE INDEX
+  agency.names[index] = manipulated.string
+  
+  # Q4."Quantity Info".3.a.ii.2 WE ALSO WANT TO ADD THE NUMBER OF JOBS THAT EACH AGENCY POSTS IN THE ASSOCIATED agency.values VECTOR. which() will be useful here!
+  agency.values[index] = length(which(NYC_Jobs$Agency ==  manipulated.string))
+  
+  # PLEASE DON'T CHANGE THIS VALUE. THIS IS NECESSARY. IN A COMMENT BELOW, COMMENT WHY
+  # YOUR ANSWER:
+  index = index + 1
+}
+
+#Q4."Quantity Info".3.b CREATING A DATAFRAME IN DESCENDING ORDER. NAME THE VARIABLES AND ORDER THE VECTOR 
+merged.agency.vectors <- data.frame(agency.names,agency.values)
+
+order.merged <- merged.agency.vectors[order(-agency.values),]
+
+# just for fun, try plotting here and look at what goes wrong
+library(plotly)
+
+p <- plot_ly(mergedataset, labels = ~agency.names, values = ~agency.values, type = 'pie') %>%
+  layout(title = 'Dissemination of Jobs(By Domain)',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+
+p
+
+  
+#Q4."Quantity Info".3.d THIS IS WHERE YOU'RE GENERATING YOUR CUTOFF. USE WHICH TO APPROACH THIS QUESTION
+greater.values<- subset(order.merged, order.merged$agency.values >= 20) 
+lower.values <- subset(order.merged, order.merged$agency.values < 20) 
+
+#Q4."Quantity Info".3.d.i FIND THE SUM OF THE JOBS THAT ARE BELOW OUR THRESHOLD
+other.sum <- sum(lower.values$agency.values)
+
+# Q4."Quantity Info".3.d.i NOW WE WANT TO ADD AN "OTHER" VALUE TO OUR order.merged DATA FRAME DON'T TOUCH THIS CODE
+add.other<-data.frame("OTHER", other.sum)
+names(add.other) <- names(greater.values)
+final.pie.chart <- rbind(greater.values, add.other)
+
+# Q4."Quantity Info".3.e PLOT A PIE CHART LOOKING AT THE final.pie.chart$AGENCY.NAMES AND final.pie.chart$AGENCY.VALUES  USING PLOTLY. GIVE AN APPROPRIATE TITLE AND LAYOUT
+jobs <-  plot_ly(final.pie.chart, labels = ~agency.names, values = ~agency.values, type = 'pie') %>%
+  layout(title = 'Distribution ofthe Job offerings by Agency ',
+         xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+         yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
+jobs
+```
+
+   
+Column {data-width=400}
+-------------------------------------
+   
+### Top 10 Job Agencies Offering Most # of Jobs
+
+```{r}
+library(gridExtra)
+library(grid)
+
+#c USING THE LINK FROM THE PDF, OUTPUT THE TOP 10 AGENCIES THAT OFFER THE MOST NUMBER OF JOBS
+
+grid.table(final.pie.chart[1:10,])
+final.pie.chart[1:10,]
+
+```   
+ 
+
+Page 2 {data-orientation=rows}
+=====================================     
+   
+Row {data-height=600}
+-------------------------------------
+
+### Chart 1
+
+
+```{r}
+# Q4."Salary Breakdown".2 THIS IS THE SETUP FOR THE FOLLOWING FOR LOOP. 
+library(plotly)
+# positions should reference unique "Civil Service Title" values
+positions<- unique(NYC_Jobs$`Civil Service Title`)
+# initialize all of these to empty vectors
+offered.jobs = {}
+offered.values  = {}
+unique.agencies = {}
+average.salary = {}
+
+index = 1
+```
+
+```{r}
+# Q4."Salary Breakdown".3 THIS IS THE FOR LOOP. 
+# choose iterator name for the for-loop
+for(i in positions){
+  # Q4."Salary Breakdown".3.a.i replace <value measuring number of these jobs offered> with any name
+  #value.measuring.number.of.these.jobs.offered = {}
+  # Q4."Salary Breakdown".3.a.i offered.jobs contains the names of the different jobs. At the appropriate index, input the iterator, as this is a reference to the name of the job
+  offered.jobs[index] = i
+  #  Q4."Salary Breakdown".3.a.ii offered.values contains the total number of jobs for this position being offered
+  offered.values[index]  = length(which(NYC_Jobs$`Civil Service Title` == i))
+  #  Q4."Salary Breakdown".3.a.iii unique.agencies contains the total number of unique agencies offering this job
+  unique.agencies[index] =   length(unique(NYC_Jobs$Agency[which(NYC_Jobs$`Civil Service Title`== i)]))
+
+  #  Q4."Salary Breakdown".3.a.iv average.salary contains the average salaries for these positions. ANALYZE THE DATASET TO UNDERSTAND HOW TO CALCULATE THE AVERAGE. 
+  sum.salary.from = sum(NYC_Jobs[NYC_Jobs$`Civil Service Title` == i,"Salary Range From"])
+  sum.salary.to = sum(NYC_Jobs[NYC_Jobs$`Civil Service Title` == i,"Salary Range To"])
+  average.salary[index] = mean(sum.salary.from + sum.salary.to)
+    
+  # DO NOT TOUCH PLEASE
+  index = index + 1
+}
+
+#Q4."Salary Breakdown".4 data frame creation
+salary.dataframe <- data.frame(unique.agencies,offered.jobs,offered.values,average.salary)
+
+#Q4."Salary Breakdown".5 ORDER THE DATASET BASED ON WHAT YOU WANT TO MEASURE
+ordered.jobs <- salary.dataframe[order(-offered.values),]
+
+#Q4."Salary Breakdown".6 Accessing the top 10 values in decreasing order
+
+order.top10<- ordered.jobs[1:10,]
+
+##### GRAPHING TIME
+
+#Q4."Salary Breakdown".7.a.iii refer to the comment inside of the brackets below to help you through this division of values
+
+x.input = unique(NYC_Jobs[which(NYC_Jobs$`Civil Service Title`== order.top10$offered.jobs),c("Agency","Salary Range From","Salary Range To")])$Agency
+
+
+
+#################
+#this is just for my refrence
+# Different Approach as Sridhar guided me but x & y lengths are different . 
+#for (i in 1:10){
+#  x.input[i]<- NYC_Jobs[which(NYC_Jobs$`Civil Service Title` == order.top10[i,]$offered.jobs),]$Agency
+#
+#Q4."Salary Breakdown".7.a.iv use the same which condition from the x.input value to find the average of the Salary Range To and Salary Range From values
+#  y.input[i] <- (NYC_Jobs[which(NYC_Jobs$`Civil Service Title` == order.top10[i,]$offered.jobs),]$`Salary Range To` +  NYC_Jobs[which(NYC_Jobs$`Civil Service Title` == order.top10[i,]$offered.jobs),]$`Salary Range From`)/2
+# i = i+1
+#}
+
+
+##################
+
+#Q4."Salary Breakdown".7.a.iv use the same which condition from the x.input value to find the average of the Salary Range To and Salary Range From values
+
+
+y.input = (unique(NYC_Jobs[which(NYC_Jobs$`Civil Service Title`== order.top10$offered.jobs),c("Agency","Salary Range From","Salary Range To")])$`Salary Range From` + unique(NYC_Jobs[which(NYC_Jobs$`Civil Service Title`== order.top10$offered.jobs),c("Agency","Salary Range From","Salary Range To")])$`Salary Range To`)/2
+
+index  = 1
+
+
+#Q4."Salary Breakdown".7.c 
+ 
+test.scatter<- plot_ly(x = ~x.input, 
+        y = ~y.input,
+        name= x.input ,
+        type= "scatter") %>%
+  add_markers(x = x.input[i], y.input[i], name=order.top10$offered.jobs[i]) %>%
+  layout(title = 'Salary breakdown For All Jobs ')
+
+
+test.scatter
+
+
+```
+
+
+Row {data-height=400}
+-------------------------------------
+   
+### Top 10 Chart
+
+```{r}
+#Q4."Salary Breakdown".8
+library(gridExtra)
+library(grid)
+
+
+# I dont know why this table doesent show up in the R Markdown file but this same command works in R script and gets the output table.
+# I have attached screenshots of the same.
+grid.table(order.top10)
+order.top10
+
+
+
+
+```   
+    
+### Description
+x-input -> Agencies that have their Civil services title in top 10 
+y-Input -> Average salaries of these Agencies.
+
+the Scatter plot consist of the xinput vs yinput showing the average salaries of top 10 civil service titles with respective Agencies. 
+Department of Envoirnment Proctection has highest average salary of around 140k

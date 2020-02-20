@@ -1,0 +1,701 @@
+---
+title: "Big Data Assignment 1"
+output:
+  word_document: default
+  pdf_document: default
+  html_document: default
+  author: "Akhil Patil (19004529)"
+---
+***
+
+### <span style="color:red"> Due Date: Wednesday, Feb. 20, 2019, before class </span>
+***
+#### A note from your TAs:
+
+Hi! We recognize that this file is a large file and may be a bit overwhelming at first -- don't worry! We'll be here to help you with any and all questions you may have. With that being said, there are a couple of house keeping notes:
+
+1. For some of the questions below, you'll see that we've included code chunks underneath the question. This is where you'll type in the code that will be grade. **Please do not** modify the chunk's properties (aka the `results = FALSE`) that you'll see at the top of each chunk. Even with these modifications, you can still run your code and view your specific results.
+
+2. You will also see `<br>` pieces throughout the document. **Please do not** delete these tags, as they are for formatting purposes. If you want to add text to your responses, please ensure that there is an empty line between your last line and any of the `<br>` tags. 
+
+3. When you submit your assignment, please just submit this file and rename it  `bigdata_asst1_lastname.Rmd`
+
+Thank you so much for reading this, and good luck with the assignment!
+
+***
+
+### Question 1: Using R built-in datasets.  
+
+a. Use the R help function to identify 2 built-in datasets.  Provide a 1-2 sentence description of one of them. Write down the code to load a built-in dataset for R.
+```{r}
+#######Q1a########
+
+#data()  # 0utputs all the inbuilt- datasets
+
+AirPassengers = ts(AirPassengers)
+AirPassengers
+# Monthly Airline Passenger Numbers 1949-1960
+
+head(USJudgeRatings)
+# Lawyers' Ratings of State Judges in the US Superior Court
+
+```
+
+
+<br>
+Use the R dataset “Seatbelts” to answer the following:
+
+b. What does the dataset contain?  There are several ways to figure this out.  Use two different ways.  One way is just to type “Seatbelts” at the R prompt.  Other commands to explore are `str( )`, `summary( )`, `dim( )`, `nrow()`, and `ncol( )` where you put the name of the database within the parenthesis.  Apply each of these functions to Seatbelts. Furthermore, apply `is.na()` and `is.null()` to check to see if there are any missing data from our datasets.
+
+<br>
+
+```{r}
+#######Q1b########
+
+Seatbelts = ts(Seatbelts)
+
+head(Seatbelts)
+
+print('Variables of Seatbelts ')
+str(Seatbelts)
+
+
+print('Summary of Seatbelts ')
+summary(Seatbelts)
+
+print('Dimensions of Seatbelts ')
+dim(Seatbelts)
+
+print('Rows in Seatbelts ')
+nrow(Seatbelts)
+
+print('Cols in Seatbelts ')
+ncol(Seatbelts)
+
+
+```
+
+Seatbelts Dataset conatins multiple time series with columns like Drivers killed , killometers , petrol proice, van killed. It contains 192 rows and 8 columns. Time series is from 1969 - 1985. It is processed dataset, there are no NaN valus and also no null vaues in the dataset.
+
+```{r}
+sum(is.na(Seatbelts))
+sum(is.null(Seatbelts))
+```
+
+
+c. How is the built-in dataset “UKDriversDeath” different from “Seatbelts”?
+
+```{r}
+#######Q1c########
+
+UKDriverDeaths = ts(UKDriverDeaths )
+head(UKDriverDeaths)
+
+```
+
+
+```{r}
+
+str(UKDriverDeaths)
+
+
+print('Summary of UKDriverDeaths ')
+summary(UKDriverDeaths)
+
+```
+
+Datasets UKDriverDeaths & Seatbelts both are Timeseries data but UKDriverDeaths just have the count of deaths of driver with no other variables whereas in Seatbelts we have more variables in addition to the year and month data.UKDriverDeaths is a time series giving the monthly totals of car drivers in Great Britain killed or seriously injured Jan 1969 to Dec 1984. Compulsory wearing of seat belts was introduced on 31 Jan 1983.
+Seatbelts is more information on the same problem. 
+
+<br>
+
+d. What does `Seatbelts[1,1]` return?  What does `Seatbelts[29, 5]` return?  Describe in 1 sentence what is going on.
+
+```{r}
+#######Q1d########
+
+Seatbelts[1,1]
+
+Seatbelts[29, 5]
+```
+
+`Seatbelts[1,1]` returns the value(107) in cell[1,1] i.e. 1st row and 1st column(DriversKilled) of the dataframe & `Seatbelts[29, 5]` returns the value(13587) in 29th row and 5th column(kms) of the dataframe.
+
+
+<br>
+
+e. If you were interested in analyzing deaths due to car accidents in the UK, describe how you could combine Seatbelts and UKDriversDeath to do so.  (You do not need actually do this.)
+
+What I can do is combine datasets with cbind function and grab the deaths from UKdriverDeaths and combine it with the Front , vankilled over the years of 1969-1985. this will give the deaths in UK with vankilled i.e car accidents.
+
+<br>
+
+f. Create a variable `Bob` and set it to True.  Type `Bob` and what does R return.  (Note that R is case sensitive so “Bob” does not equal “bob”.)  Type `Bob+Bob`.  What is the result and what is going on?
+
+```{r}
+#######Q1f########
+
+Bob = TRUE
+
+Bob+Bob
+
+```
+
+Bob is assigned as 'TRUE' which is treated as bolean which is '1' for 'TRUE' & '0' for 'FALSE'. So, when we perform `Bob+Bob` it returns "2" which is 1+1 in boolean.
+
+<br>
+
+g. What is vector recycling in R?  (It applies to all vectors not just logical ones.)  Create a vector of two logical values and another of 5 logical values.  Ask R if those two vectors are equal.  What happens and what is going on?
+
+```{r}
+#######Q1g########
+
+a = c(1,0)
+b=  c(1,1,1,0,1)
+
+a == b
+```
+
+Vector Recycling in r:
+If two vectors are of unequal length, the shorter one will be recycled in order to match the longer vector. For example, the following vectors u and v have different lengths, and their sum is computed by recycling values of the shorter vector u.
+
+
+if the value of "a" matches with Value of  'b' then R returns 'TRUE' otherwise 'FALSE'. Each vale of vector 'a' is been compared with vector 'b'. since 'a' has only 2 elements so for comparing the rest of the elements from 'b , 'a' is been repeated .
+which means that R compares a(1,0,1,0,1) & b(1,1,1,0,1) which returns "TRUE FALSE  TRUE  TRUE  TRUE"
+
+****
+
+### Question 2: Basic Data Manipulation
+
+a. Download the PUMS dataset from Canvas, file name: `psam_p34.csv`. This is the  Public Use Micro Dataset, a subset from the ACS survey.  You can also find on Canvas the definition of variables for this dataset (PUMS_Data_Dictionary_2017). Follow the directions below to import a dataset into RStudio
+    * Go to “File” tab at top of Computer Screen
+    * Under “Import Dataset”, choose “From Text(base)”
+    * Navigate to the folder in which dataset is downloaded
+    * Click Import to continue through with the dataset
+    * **Note**: R Studio actually provides you with the code to import datasets. Type that code below
+
+```{r results = FALSE}
+#######Q2a########
+
+psam <- read.csv("D:/Downloads/psam_p34.csv", stringsAsFactors=FALSE)
+```
+
+<br>
+
+b. Add a new column to the data frame and fill it with 10 in all rows. 
+
+```{r results = FALSE}
+#######Q2b########
+
+psam$newcol = 10
+
+colnames(psam)
+
+psam['newcol']
+```
+
+<br>
+
+c. Add a new column to the data frame and copy the data from an existing column in the dataset, `PWGTP80` into this column.
+
+```{r results = FALSE }
+#######Q2c########
+
+psam$newcol = psam$PWGTP80
+
+psam['newcol']
+```
+
+<br>
+
+d. Delete the column `PWGTP74`
+
+```{r results = FALSE}
+#######Q2d########
+
+psam$PWGTP74 <- NULL
+
+#colnames(psam)
+```
+
+<br>
+
+e. Rename the column `CIT` as `CHARCT`
+
+```{r results = FALSE}
+#######Q2e########
+
+
+names(psam)[names(psam) == 'CIT'] <- 'CHARCT'
+
+#colnames(psam)
+
+psam["CHARCT"]
+
+```
+
+
+***
+
+### Question 3: Subsetting & Sorting Data
+
+Subsetting data is the process of retrieving just the parts of larger datasets that are of specific interest for the project at hand. It is a very important component of data management and there are several ways that one can subset data in R. 
+
+a. Complete the data subsetting tutorial at this [website](https://stats.idre.ucla.edu/r/faq/frequently-asked-questions-about-rhow-can-i-subset-a-data-setthe-r-program-as-a-text-file-for-all-the-code-on-this-page-subsetting-is-a-very-important-component/) 
+
+<br>
+
+
+b. Sort the data according to the variable `MAR` in ascending order
+
+```{r results = FALSE}
+#######Q3b########
+
+head(psam)
+
+psam1 = psam[order(psam$MAR),]
+
+head(psam1)
+
+```
+
+<br>
+
+
+c. Sort the data in ascending order by `PWGTP3` and descending order by `PWGTP7` together. 
+
+```{r results = FALSE}
+#######Q3c########
+
+
+psam2 = psam[order(psam$PWGTP3, -psam$PWGTP7),]
+
+head(psam2)
+
+```
+
+<br>
+
+
+d. Create a subset of the data by “keeping” the first 10 variables in the PUMS dataset (`RT` to `AGEP`) or “dropping” the other variables. 
+
+```{r results = FALSE}
+#######Q3d########
+
+
+psam_subset = psam[,1:10]
+
+head(psam_subset)
+
+dim(psam_subset)
+
+```
+
+<br>
+
+e. Create a subset of the data by “keeping” the first 10 observations. 
+
+```{r results = FALSE}
+#######Q3e########
+
+psam_sub = psam[1:10,]
+
+head(psam_sub)
+dim(psam_sub)
+
+```
+
+<br>
+
+f. Take a random sample of the dataset of size 50:
+    * with replacement
+```{r results = FALSE}
+#######Q3f########
+
+#(i) with replacement
+set.seed(100)
+sam_rep = psam[sample(nrow(psam),50, replace = TRUE),]
+
+head(sam_rep)
+```
+    * without replacement
+```{r results = FALSE}
+
+#(ii) without replacement
+sam_wrep = psam[sample(nrow(psam),50, replace = FALSE),]
+
+head(sam_wrep)
+```
+
+***
+
+### Question 4: Descriptive Stats
+
+For this question, we will use one of the most common R built-in datasets, `mtcars`. The easiest way to get descriptive statistics in R is using the `summary()` command. 
+
+<br>
+
+a. Find the summary statistics of the `mtcars` dataset using the `summary()` command. 
+
+```{r}
+#######Q4a########
+
+summary(mtcars)
+```
+
+<br>
+
+b. Another way to get more detailed descriptive statistics is to use the `pastecs` package. 
+    * Install the `pastecs` package:
+        * Type `install.packages("pastecs")` and load it from the library by typing `library(pastecs)`
+        
+```{r}
+#######Q4b########
+
+#install.packages("pastecs")
+library(pastecs)
+```
+
+        
+    * Find the command to get the descriptive statistics using this package. (Hint: your output should give you a minimum, maximum, range, SE. mean, C.I Mean, standard deviation and coefficient of variance etc)
+    
+```{r}
+stat.desc(mtcars)
+
+```
+
+
+<br>
+    
+c. There are also separate commands to get the mean, median and mean statistics. Find the mean, median and mode of the variable `mpg` by separate commands. 
+
+```{r}
+#######Q4c########
+
+mean(mtcars$mpg)
+
+median(mtcars$mpg)
+
+mode1 = names(table(mtcars$mpg))[table(mtcars$mpg)==max(table(mtcars$mpg))]
+
+mode1
+```
+
+<br>
+
+d. Find the length of the variable `qtsec`. Why are the lengths of all the variables the same? 
+```{r}
+
+#######Q4d########
+
+length(mtcars$qsec)
+
+# Length of 'qsec' is 32
+# Variables are part of dataframe , which is a table and each varaible needs to be equal lentyh to form a tabular structure. even if variables are of uneqaul lenth they are filled with NULL to make up the dimensions of table.
+
+```
+
+<br>
+
+e. Find the maximum and minimum value of the `mpg` variable.
+
+```{r}
+#######Q4e########
+
+mpg_max = max(mtcars$mpg)
+mpg_max
+
+mpg_min= min(mtcars$mpg)
+mpg_min
+```
+
+
+<br>
+
+f. Determine the location i.e index of the maximum and minimum value you found in part e. (Hint: Try the `which.max` command).
+
+```{r}
+#######Q4f########
+
+which.max(mtcars$mpg)
+
+which.min(mtcars$mpg)
+
+```
+
+
+***
+
+### Question 5: Putting it all together
+
+#### Downloading a dataset:
+
+1. Go to [this link](https://www.kaggle.com/aparnashastry/building-permit-applications-data#Building_Permits.csv) on Kaggle. This should take you to a page for the "San Francisco Building Permits" dataset. (**note**: you will have to create an account in roder to download this dataset. Kaggle is a PHENOMENAL resource for datasets and data-related explorations, so making this account now will help you for future assignments.)
+```{r}
+
+```
+
+    
+2. Once you’ve downloaded this dataset, time to **import** the dataset into RStudio (Refer to Question 2 for tips on importing datasets). Type in the code that imports this dataset below: (After a while, you will see that the dataset “`Building_Permits`” is available in your “Global Variable” explorer in RStudio)
+```{r results = FALSE}
+#######Q5->2########
+
+Building_Permits <- read.csv("C:/Users/akhil/Downloads/Building_Permits.csv", stringsAsFactors=FALSE)
+```
+  
+    
+<br>
+
+#### Preparing for data manipulation:
+
+1. If you’ve successfully imported the dataset, you should have a `Building_Permits` variable in your global explorer  -- **congrats!** As per convention, it’s always a great idea to create a **copy** of your dataset, so that whatever manipulations you make don’t affect the original dataset. With that being said, make a copy of the dataset!
+        * **hint:** Name the copy whatever you would like and literally use the `<-` operator to assign your newly named variable to the existing `Building_Permits` dataset
+
+```{r results = FALSE}
+#######Q5->2->1########
+
+buldgp = Building_Permits
+
+
+```
+        
+<br>
+
+#### Exploring the dataset:
+
+1. Thus far, we’ve downloaded the dataset and made copies to prevent against any future accidents. Now, let’s explore our dataset a little further and really understand what we’re dealing with here:
+
+2. Reproduce the following printed statement  **with code** and **replace X** with the number of rows and **replace Y**  with the number of columns of your dataset :
+`Dimensions:  X rows,  Y columns`
+
+  * **hints**:
+    1. you'll find the [R `cat()`](https://www.rdocumentation.org/packages/base/versions/3.5.2/topics/cat) function really helpful
+    2. The `dim()` function from question 1 will be really useful!  (Also, there are two components that are returned by calling the `dim()` function, and you can access each portion with a proper index call (example: `dim(“<dataset_name”>)[index]`)
+    3. You can use the cat() function as follows:
+    `cat(“<String: ”, data, “<another string>”, more data)`
+
+```{r results = FALSE}
+#######Q5->3->2########
+
+dim(buldgp)
+
+cat("Dimensions: ",dim(buldgp)[1], " rows, ",dim(buldgp)[2], " columns"  )
+
+``` 
+3. Generally, if we’re dealing with data that is numeric, it might be helpful to look for the averages in a dataset. Take a quick look at the different columns of this dataset -- do you think it’s appropriate to analyze stats like the mean, median, mode for the numeric columns? Why or why not? 
+
+```{r}
+#######Q5->3->3########
+str(buldgp)
+
+summary(buldgp)
+
+# No, Because by running the above commands we can see that most of the columns in the dataset are character strings.
+# but there are some columns like units , Estimated cost , revised cost , etc. for which we can have need for mean , median.
+
+```
+
+
+  
+4. We know that we’re dealing with an incredible number of rows in our dataset (if you discovered the dimensions properly, we’re looking at ~200k rows). However, for some columns, we don’t have ~200k unique values. Let’s discover some unique values. Find the number of unique values that are in the `Existing.Use` and the `Neighborhoods...Analysis.Boundaries` columns and print your results in the following format, replacing X and Y with their appropriate values (Please don’t just *write* in the numbers, we want to see you **use** the functions in R to figure this out!) <br>`The Existing.Use column has X unique values and the Neighborhoods...Analysis.Boundaries has Y unique values`
+
+  * **hints:**
+    1. `cat()` will be your best friend!
+    2. There is literally a function called [`unique()`](https://www.rdocumentation.org/packages/base/versions/3.5.2/topics/unique)-- figure out how to manipulate this!
+
+
+```{r results = FALSE}
+#######Q5->3->4########
+#colnames(buldgp)
+
+cat("The Existing.Use column has ", length(unique(buldgp$Existing.Use))," unique values and the Neighborhoods...Analysis.Boundaries has ",length(unique(buldgp$Neighborhoods...Analysis.Boundaries)) ," unique values")
+
+```
+
+
+5. This is the DIY part of your data exploration -- find something interesting about the data using R code, and tell us why you think it’s interesting!
+
+```{r results = FALSE}
+colnames(buldgp)
+library(ggplot2)
+
+# making a copy of dataset to perent changes.
+temp = buldgp
+str(temp)
+
+#parsing the FiledDate column to recognize as Date in R
+buldgp$Filed.Date <- as.Date(buldgp$Filed.Date, "%m/%d/%Y")
+
+#creating new column with filedmonth
+temp$filedmonth = format(buldgp$Filed.Date,'%m')
+
+#creating new column with filedyear
+temp$filedyear = format(buldgp$Filed.Date,'%Y')
+
+# plotting filedmonth with the proposed.Units
+ggplot(temp,aes(x=filedmonth , y = Proposed.Units)) +
+  geom_jitter()
+
+# plotting filedmonth with the proposed.Units
+ggplot(temp,aes(x=filedyear , y = Proposed.Units)) +
+  geom_jitter()
+
+```
+
+From the above graph we can conclude that most of the proposed units where in the months of January & May and the higgest number of proposed units is 1500 in months of january.
+Also, Looking at the year graph we can say that most of the units where proposed in 2013 and some of units where proposed in 2017.
+
+```{r}
+
+temp$Current.Status = as.factor( temp$Current.Status)
+
+ggplot(temp,aes(x=filedyear , y = Current.Status)) +
+  geom_jitter()
+
+ggplot(temp,aes(x=filedmonth , y = Current.Status)) +
+  geom_jitter()
+
+
+```
+
+From the above graph we can conclude that Current status of most of the Bulding permits were in 2013 
+Also in 2013, the Current Status of permits where mostly issued, filed, complete & somewat withdrawm. Some of the permits where issued in 2017.
+From the other graph current status of projects are mostly concentrated in first 5 months and then permits are took down in rest of the year.
+Most of the permits appears to the issued & completed till the month of May.
+        
+<br>
+
+#### Data Manipulation
+
+*Let’s draw upon Question 3: Subsetting datasets. Oftentimes, when we’re working with data, we’re not concerned about every single column in a dataset. Instead, there is only a handful of columns that are important to our needs. With this in mind, we’ll subset our dataset so that we don’t have to continually sift through relatively useless information in order to use our data. To this effect, we’re going to create 2 individual “datasets” that are simply subsets of our main, overarching dataset.*s
+    
+a. Create a subset of your **copy** of the `Building_Permits` dataset that only contains the following columns: `Permit.Number`, `Description`, `Existing.Use`
+```{r results = FALSE}
+#######Q5->4->1a########
+
+#colnames(buldgp)
+
+#buldgp_sub = cbind(buldgp$Existing.Use,buldgp$Permit.Number,buldgp$Description)
+
+buldg_sub1 = buldgp[c("Existing.Use","Description","Permit.Number")]
+
+dim(buldg_sub1)
+
+
+```
+b. Create a second subset of your **copy** of the `Building_Permits` dataset that only contains the following columns: `Permit.Number`, `Proposed.Use` . However, we want this subset to only access entries from row 50,000 to 60,000.
+    * **hints:**
+      * when subsetting for specific entries in a dataset, we can actually do the following: `dataset[index, index][<condition>]`
+      * To access rows in a column, we specify the index to be `dataset[index,]`. The lefthand side is for specifying rows, the righthand side is for specifying columns
+
+
+```{r results = FALSE}
+#######Q5->4->b########
+buldg_sub2 = buldgp[50000:60000, c("Permit.Number","Proposed.Use")]
+
+```
+
+<br>
+
+c. Now that we have two separate components of our dataset, let’s merge them together! Realistically, you’d really just create a singular subset with this information together. However, we have a highly specific use case now: one of our subsets only refers to a portion of the entries in our dataset, while the other dataset refers to all of the entries in our dataset
+        1. Merging datasets requires a really, really longwinded and misleading complex function: [`merge()`](https://www.rdocumentation.org/packages/base/versions/3.5.2/topics/merge) (this was a miserable joke by one of your TAs, feel free to send hate mail to Sridhar). Read the documentation, understand the parameters, and merge the datasets based on the `Permit.Number` column into a new variable.
+```{r results = FALSE}
+#######Q5->4->c########
+
+buldg_sub = merge(buldg_sub1,buldg_sub2,by="Permit.Number")
+
+head(buldg_sub,10)
+
+dim(buldg_sub)
+```
+
+<br>
+
+d. There’s now an interesting phenomenon regarding our dataset: even though the second subset dealt with rows 50,000 to 60,000 (~ 10k entries), our new dataset does not match the ~10k dimension! Why do you think this is? (**hint**: `unique()` might come in handy)
+```{r}
+#######Q5->4->d########
+
+length(unique(buldg_sub$Permit.Number))
+
+#By default the data frames are merged on the columns with names they both have, but separate specifcations of the columns can be given by by.x and by.y. Columns can be specified by name, number or by a logical vector: the name "row.names" or the number 0 specifies the row names. The rows in the two data frames that match on the specified columns are extracted, and joined together. If there is more than one match, all possible matches contribute one row each.
+
+#So, in our case the 10,000 values of second dataframe matched with the ~200k values in 1st data frame and if there where more than one match it lead to their individul columns. which lead to a total of 11783 values means we have unique values as 9221 , so 2562 are the duplicates that matched more than one pair. 
+
+```
+       
+<br>
+
+e. Let’s take this newly merged dataset, and alphabetize the data based on the `Proposed.Use` column. The [`order()`](https://www.rdocumentation.org/packages/base/versions/3.5.2/topics/order) function will help tremendously!
+        
+```{r results = FALSE}
+#######Q5->4->e########
+
+buldgp = buldgp[order(buldg_sub$Proposed.Use),]
+
+head(buldgp)
+
+```
+
+<br>
+
+f. Take a look at your new, alphabetized dataset. In the  `Proposed.Use` column, we’re missing data for what seems to be a decent amount of column’s entries. Normally, we’d use the `is.na()` or `is.null()` function like we did earlier to check for missing data. However, in this dataset, all empty data are actually considered to be *empty strings*. (Example: “”). It sounds really counterintuitive but despite these entries being visibly empty, R considers them to be non-empty entries. With this in mind, let’s tackle the missing data:
+    1. Find the number of missing data points in the `Proposed.Use` column. (You’ll need to check which entries are **empty strings**)
+
+```{r results = FALSE}
+#######Q5->4->f########
+
+sum(buldg_sub$Proposed.Use == "")
+
+# index of the empty strings
+head(which(buldg_sub$Proposed.Use == ""))
+
+```
+  
+<br>
+    
+g. Through a stroke of luck, Dr. Felder recently stumbled on a bit of cash and has decided to quit his job as a professor and invest in real estate full time! (again, a miserable joke). To help him with this, we want to replace all of the missing entries that we found in the `Proposed.Use` column with “`felder’s penthouse`”
+    * **warning:** this is not an easy task and requires a bit of thinking. [This post](https://stackoverflow.com/questions/5824173/replace-a-value-in-a-data-frame-based-on-a-conditional-if-statement) on StackOverflow is really insightful to approach this problem.
+        * This post converts the existing column to a character datatype with `as.character()` because even though that we can see that the entries in a column are text, R sometimes encodes text-based columns as different data types. To guard against this, we use `as.character()`.
+    * **side note**: side note (optional): sometimes, we want to export datasets that we create so that others can use them! [`write.csv()`](http://rprogramming.net/write-csv-in-r/) is a really helpful way to write any dataframes to .csv files!
+            
+```{r results = FALSE}
+#######Q5->4->g########
+
+
+buldg_sub$Proposed.Use[buldg_sub$Proposed.Use == ""] <- "felder's penthouse"
+
+sum(buldg_sub$Proposed.Use == "felder's penthouse")
+
+
+```
+
+***
+
+### Feedback
+	
+a. How long did it take to complete this homework?
+-> Almost 2 days
+
+b. How difficult was the homework?
+-> 6 (on scale of 1-10) it was not difficult just the thing is it had many questions. So, it took time . 
+
+c. Which parts did you find useful and which parts were less useful?
+-> Q5 was challenging and whole assignment is usefull.
+
+d. What suggestions do you have regarding the lectures or homework assignments that would improve them?
+-> instead of putting questions in Rmd file you can just put chunks and write their respesctive question numbers so that it becomes easy to navigate and code looks much clean. whereas in this current scenario it becomes too crowded and much harder to navigate to any sub question. just put the questions in assignmnet pdf we can reffer question from their.
+example :
+```{r}
+####### this is an example for Question number#####
+# this above line  helps to navigate to respective chunks. 
+```
+
+
+          
+
+
+
+        
+
+
+

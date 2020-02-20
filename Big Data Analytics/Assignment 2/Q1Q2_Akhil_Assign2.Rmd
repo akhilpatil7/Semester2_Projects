@@ -1,0 +1,136 @@
+---
+title: "R Notebook"
+output: html_notebook
+author: "Akhil Patil"
+---
+
+
+```{r}
+
+#install.packages("plotly")
+library('plotly')
+
+####### Q1 -> a ##########
+
+
+head(iris)
+
+
+p <- plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length)
+p
+```
+
+```{r}
+####### Q1 -> b ##########
+pal <- c("red", "blue", "green")
+p = plot_ly(data = iris, x = ~Sepal.Length, y = ~Petal.Length,color = ~Species , colors = pal)
+p
+```
+
+```{r}
+######## Q1 -> c #########
+
+# 1
+p = plot_ly(data =iris,  x = ~Sepal.Length , type = "histogram")
+p
+```
+
+```{r}
+# 2
+p = plot_ly(data =iris,  y = ~Sepal.Length , type = "histogram")
+p
+
+```
+
+```{r}
+# 3
+p = plot_ly(data =iris,  alpha = 0.6) %>%
+  add_histogram(x = ~Sepal.Length) %>%
+  add_histogram(x = ~Sepal.Length + 1) %>%
+  layout(barmode = "overlay")
+p
+
+```
+
+
+```{r}
+######## Q1 -> d #########
+
+today <- Sys.Date()
+tm <- seq(0, 600, by = 10)
+x <- today - tm
+y <- rnorm(length(x))
+p <- plot_ly(x = ~x, y = ~y, mode = 'lines', text = paste(tm, "days from today"))
+p
+
+```
+
+
+```{r}
+############################## 2 -> 1 ############################
+
+d = read.csv("https://raw.githubusercontent.com/plotly/datasets/master/2011_february_us_airport_traffic.csv")
+
+d
+d$hover <- with(d, paste(state, '<br>', airport, iata , "<br>",
+                            city,"<br>"))
+
+# give state boundaries a white border
+l <- list(color = toRGB("white"), width = 0.5)
+
+# specify some map projection/options
+g <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showlakes = TRUE,
+  lakecolor = toRGB('white')
+)
+
+p <- plot_geo(d, locationmode = 'USA-states') %>%
+  add_trace(
+    z = ~cnt, text = ~hover , locations = ~state,
+    color = ~cnt, colors = 'Blues'
+  ) %>%
+  colorbar(title = "Count") %>%
+  layout(
+    title = '2011 US Airport Traffic',
+    geo = g
+  )
+
+p
+
+```
+
+
+
+```{r}
+############################## 2 -> 2 ############################
+
+df = read.csv("https://raw.githubusercontent.com/plotly/datasets/master/2014_us_cities.csv")
+
+# geo styling
+g <- list(
+  scope = 'usa',
+  projection = list(type = 'albers usa'),
+  showland = TRUE,
+  landcolor = toRGB("gray95"),
+  subunitcolor = toRGB("gray85"),
+  countrycolor = toRGB("gray85"),
+  countrywidth = 0.5,
+  subunitwidth = 0.5
+)
+dim(df)
+p <- plot_geo(df[1:1500,], lat = ~lat, lon = ~lon) %>%
+  add_markers(
+    text = ~paste(name, paste("Population:", pop)),
+    color = ~name, symbol = I("square"), size = I(8), hoverinfo = "text"
+  ) %>%
+  colorbar(title = "population of cities") %>%
+  layout(
+    title = 'Most populated cities in US <br />(Hover for population of cities)', geo = g
+  )
+p
+
+```
+
+
